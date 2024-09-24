@@ -4029,10 +4029,10 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-mentions@4.1.13":
-  version "4.1.13"
-  resolved "https://registry.yarnpkg.com/@types/react-mentions/-/react-mentions-4.1.13.tgz#293e56e14c502f6a73217fece0b870e54a0cc657"
-  integrity sha512-kRulAAjlmhCtsJ9bapO0foocknaE/rEuFKpmFEU81fBfnXZmZNBaJ9J/DBjwigT3WDHjQVUmYoi5sxEXrcdzAw==
+"@types/react-mentions@4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@types/react-mentions/-/react-mentions-4.4.0.tgz#d5396140390a10ae696222a8a2a4b51cf58fca01"
+  integrity sha512-dKnY1h42GPUO/QAyei6HxEsFUbEcqK/t1k60ZbLJstB9RAs8OCT69mj9AnUbeNdbzYVISE88OC2IYkkthAAn2g==
   dependencies:
     "@types/react" "*"
 
