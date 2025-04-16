@@ -18,10 +18,16 @@ class BroadcastListTest(APITestCase):
         assert response.status_code == 200
         assert len(response.data) == 1
         assert response.data[0]["id"] == str(broadcast1.id)
+        # Non-superusers shouldn't see createdBy
+        assert "createdBy" not in response.data[0]
 
     def test_superuser_with_all(self):
-        Broadcast.objects.create(message="bar", is_active=True)
-        Broadcast.objects.create(message="foo", is_active=False)
+        # Broadcast with a creator
+        broadcast_with_creator = Broadcast.objects.create(
+            message="bar", is_active=True, created_by_id=self.user
+        )
+        # Broadcast without a creator
+        broadcast_without_creator = Broadcast.objects.create(message="foo", is_active=False)
 
         self.add_user_permission(user=self.user, permission="broadcasts.admin")
         self.login_as(user=self.user, superuser=True)
@@ -30,6 +36,22 @@ class BroadcastListTest(APITestCase):
         assert response.status_code == 200
         assert len(response.data) == 2
 
+        # Order might not be guaranteed, find the broadcasts in the response
+        serialized_with_creator = next(
+            (b for b in response.data if b["id"] == str(broadcast_with_creator.id)), None
+        )
+        serialized_without_creator = next(
+            (b for b in response.data if b["id"] == str(broadcast_without_creator.id)), None
+        )
+
+        assert serialized_with_creator is not None
+        assert serialized_without_creator is not None
+
+        # Check createdBy field - should be email for superuser
+        assert serialized_with_creator.get("createdBy") == self.user.email
+        # Check createdBy field when creator is None
+        assert serialized_without_creator.get("createdBy") is None
+
         response = self.client.get("/api/0/broadcasts/?show=all&query=status:active")
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -37,14 +59,20 @@ class BroadcastListTest(APITestCase):
         response = self.client.get("/api/0/broadcasts/?show=all&query=status:inactive")
         assert response.status_code == 200
         assert len(response.data) == 1
+        # Check createdBy field on filtered results too
+        assert response.data[0]["id"] == str(broadcast_without_creator.id)
+        assert response.data[0].get("createdBy") is None
 
         response = self.client.get("/api/0/broadcasts/?show=all&query=status:zzz")
         assert response.status_code == 200
         assert len(response.data) == 0
 
-        response = self.client.get("/api/0/broadcasts/?show=all&query=foo")
+        response = self.client.get("/api/0/broadcasts/?show=all&query=bar")
         assert response.status_code == 200
         assert len(response.data) == 1
+        # Check createdBy field on filtered results too
+        assert response.data[0]["id"] == str(broadcast_with_creator.id)
+        assert response.data[0].get("createdBy") == self.user.email
 
         response = self.client.get("/api/0/broadcasts/?show=all&query=zzz")
         assert response.status_code == 200
