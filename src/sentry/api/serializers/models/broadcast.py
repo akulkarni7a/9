@@ -1,5 +1,6 @@
 from django.db.models import Count
 
+from sentry.users.models.user import User
 from sentry.api.serializers import Serializer, register
 from sentry.models.broadcast import Broadcast, BroadcastSeen
 
@@ -52,5 +53,16 @@ class AdminBroadcastSerializer(BroadcastSerializer):
     def serialize(self, obj, attrs, user, **kwargs):
         context = super().serialize(obj, attrs, user)
         context["userCount"] = attrs["user_count"]
-        context["createdBy"] = obj.created_by_id.id if obj.created_by_id else None
+
+        creator_email = None
+        if obj.created_by_id:
+            try:
+                creator = User.objects.get(id=obj.created_by_id.id)
+                creator_email = creator.email
+            except User.DoesNotExist:
+                # Handle the case where the user might have been deleted
+                # Log a warning or simply leave creator_email as None
+                pass  # Keep creator_email as None
+
+        context["createdBy"] = creator_email
         return context

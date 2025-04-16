@@ -3,6 +3,7 @@ from django.urls import reverse
 from sentry.models.broadcast import Broadcast, BroadcastSeen
 from sentry.testutils.cases import APITestCase
 from sentry.testutils.silo import control_silo_test
+from sentry.users.models.user import User
 
 
 @control_silo_test
@@ -20,33 +21,69 @@ class BroadcastListTest(APITestCase):
         assert response.data[0]["id"] == str(broadcast1.id)
 
     def test_superuser_with_all(self):
-        Broadcast.objects.create(message="bar", is_active=True)
-        Broadcast.objects.create(message="foo", is_active=False)
+        # Broadcast created by the logged-in superuser
+        broadcast1 = Broadcast.objects.create(
+            message="bar", is_active=True, created_by_id=self.user.id
+        )
+        # Broadcast with no specific creator
+        broadcast_no_creator = Broadcast.objects.create(
+            message="no creator", is_active=True, created_by_id=None
+        )
+        # Broadcast whose creator will be deleted
+        creator_to_delete = self.create_user(email="delete@me.com")
+        broadcast_deleted_creator = Broadcast.objects.create(
+            message="deleted creator", is_active=True, created_by_id=creator_to_delete.id
+        )
+
+        # Delete the user *before* making the API call
+        creator_to_delete.delete()
 
         self.add_user_permission(user=self.user, permission="broadcasts.admin")
         self.login_as(user=self.user, superuser=True)
 
         response = self.client.get("/api/0/broadcasts/?show=all")
         assert response.status_code == 200
-        assert len(response.data) == 2
+        # Should now have 3 broadcasts total
+        assert len(response.data) == 3
 
+        # Verify createdBy field for each broadcast
+        response_data = {item["id"]: item for item in response.data}
+
+        assert str(broadcast1.id) in response_data
+        broadcast1_data = response_data[str(broadcast1.id)]
+        assert broadcast1_data["createdBy"] == self.user.email
+
+        assert str(broadcast_no_creator.id) in response_data
+        broadcast_no_creator_data = response_data[str(broadcast_no_creator.id)]
+        assert broadcast_no_creator_data["createdBy"] is None
+
+        assert str(broadcast_deleted_creator.id) in response_data
+        broadcast_deleted_creator_data = response_data[str(broadcast_deleted_creator.id)]
+        assert broadcast_deleted_creator_data["createdBy"] is None
+
+        # Test filtering (ensure existing tests still pass conceptually)
         response = self.client.get("/api/0/broadcasts/?show=all&query=status:active")
         assert response.status_code == 200
-        assert len(response.data) == 1
+        # All 3 created broadcasts are active
+        assert len(response.data) == 3
 
         response = self.client.get("/api/0/broadcasts/?show=all&query=status:inactive")
         assert response.status_code == 200
-        assert len(response.data) == 1
+        assert len(response.data) == 0 # No inactive broadcasts created
 
         response = self.client.get("/api/0/broadcasts/?show=all&query=status:zzz")
         assert response.status_code == 200
         assert len(response.data) == 0
 
-        response = self.client.get("/api/0/broadcasts/?show=all&query=foo")
+        response = self.client.get("/api/0/broadcasts/?show=all&query=bar") # Query for broadcast1 message
         assert response.status_code == 200
         assert len(response.data) == 1
 
-        response = self.client.get("/api/0/broadcasts/?show=all&query=zzz")
+        response = self.client.get("/api/0/broadcasts/?show=all&query=deleted") # Query for broadcast_deleted_creator message
+        assert response.status_code == 200
+        assert len(response.data) == 1
+
+        response = self.client.get("/api/0/broadcasts/?show=all&query=zzz") # Non-matching query
         assert response.status_code == 200
         assert len(response.data) == 0
 
