@@ -43,13 +43,41 @@ Sentry is a developer-first error tracking and performance monitoring platform t
 - [Unreal Engine](https://github.com/getsentry/sentry-unreal)
 - [PowerShell](https://github.com/getsentry/sentry-powershell)
 
+# Installation
+
+For information on how to install Sentry, please refer to the following resources:
+
+- [Sentry Documentation](https://docs.sentry.io/)
+- [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
+
+# Contributing
+
+We welcome contributions to Sentry! Please refer to our [Developer Documentation](https://develop.sentry.dev/) for information on how to get started. This documentation includes information on:
+
+- Getting Started (Philosophy, Inclusive Language)
+- Engineering Practices
+- Application Architecture
+- Development Infrastructure
+- Backend
+- Frontend
+- Services
+- Integrations
+- Ingestion
+- SDKs
+- Self-Hosted Sentry
+
+Contributions from AK and others.
+
+# Acknowledgements
+
+- AK
+
 # Resources
 
 - [Documentation](https://docs.sentry.io/)
 - [Discussions](https://github.com/getsentry/sentry/discussions) (Bugs, feature requests,
   general questions)
 - [Discord](https://discord.gg/PXa5Apfe7K)
-- [Contributing](https://docs.sentry.io/internal/contributing/)
 - [Bug Tracker](https://github.com/getsentry/sentry/issues)
 - [Code](https://github.com/getsentry/sentry)
 - [Transifex](https://www.transifex.com/getsentry/sentry/) (Translate
