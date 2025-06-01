@@ -43,6 +43,9 @@ Sentry is a developer-first error tracking and performance monitoring platform t
 - [Unreal Engine](https://github.com/getsentry/sentry-unreal)
 - [PowerShell](https://github.com/getsentry/sentry-powershell)
 
+## Contributors
+- AK
+
 # Resources
 
 - [Documentation](https://docs.sentry.io/)
