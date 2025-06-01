@@ -44,7 +44,7 @@ Sentry is a developer-first error tracking and performance monitoring platform t
 - [PowerShell](https://github.com/getsentry/sentry-powershell)
 
 ## Contributors
-- AK
+- Frank
 
 # Resources
 
