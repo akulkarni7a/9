@@ -33,7 +33,7 @@ function BaseFooter({className}: Props) {
           <Fragment>
             {'Sentry '}
             {getDynamicText({
-              fixed: 'Acceptance Test',
+          fixed: 'Jules Was Here',
               value: version.current,
             })}
             <Build>
